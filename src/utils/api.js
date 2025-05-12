@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,94 +9,63 @@ const api = axios.create({
   },
 });
 
-// Using localStorage to persist mock data
-const getMockNotes = () => {
-  if (typeof window !== 'undefined') {
-    const storedNotes = localStorage.getItem('notes');
-    return storedNotes ? JSON.parse(storedNotes) : [];
+// Add request interceptor to add auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return [];
-};
-
-const saveMockNotes = (notes) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('notes', JSON.stringify(notes));
-  }
-};
+  return config;
+});
 
 export const notes = {
-  getAll: async () => {
+  getAll: async (page = 1, limit = 10) => {
     try {
-      const notes = getMockNotes();
-      return notes;
+      const response = await api.get(`/api/notes?page=${page}&limit=${limit}`);
+      return response.data;
     } catch (error) {
       console.error('Error getting notes:', error);
-      throw new Error('Failed to fetch notes');
+      throw new Error(error.response?.data?.message || 'Failed to fetch notes');
     }
   },
 
   getOne: async (id) => {
     try {
-      const notes = getMockNotes();
-      const note = notes.find(note => note.id === id);
-      if (!note) throw new Error('Note not found');
-      return note;
+      const response = await api.get(`/api/notes/${id}`);
+      return response.data;
     } catch (error) {
       console.error('Error getting note:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || 'Failed to fetch note');
     }
   },
 
   create: async (title, body) => {
     try {
-      const notes = getMockNotes();
-      const newNote = {
-        id: Math.random().toString(36).substr(2, 9),
-        title,
-        content: body,
-        createdAt: new Date().toISOString(),
-      };
-      notes.push(newNote);
-      saveMockNotes(notes);
-      return newNote;
+      const response = await api.post('/api/notes', { title, body });
+      return response.data;
     } catch (error) {
       console.error('Error creating note:', error);
-      throw new Error('Failed to create note');
+      throw new Error(error.response?.data?.message || 'Failed to create note');
     }
   },
 
   update: async (id, title, body) => {
     try {
-      const notes = getMockNotes();
-      const noteIndex = notes.findIndex(note => note.id === id);
-      if (noteIndex === -1) throw new Error('Note not found');
-      
-      const updatedNote = {
-        ...notes[noteIndex],
-        title,
-        content: body,
-        updatedAt: new Date().toISOString(),
-      };
-      notes[noteIndex] = updatedNote;
-      saveMockNotes(notes);
-      return updatedNote;
+      const response = await api.put(`/api/notes/${id}`, { title, body });
+      return response.data;
     } catch (error) {
       console.error('Error updating note:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || 'Failed to update note');
     }
   },
 
   delete: async (id) => {
     try {
-      const notes = getMockNotes();
-      const noteIndex = notes.findIndex(note => note.id === id);
-      if (noteIndex === -1) throw new Error('Note not found');
-      notes.splice(noteIndex, 1);
-      saveMockNotes(notes);
-      return { success: true };
+      const response = await api.delete(`/api/notes/${id}`);
+      return response.data;
     } catch (error) {
       console.error('Error deleting note:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || 'Failed to delete note');
     }
   },
 };
@@ -104,24 +73,30 @@ export const notes = {
 export const auth = {
   login: async (email, password) => {
     try {
-      // For demo purposes, we'll just return a mock token
-      // In a real app, this would make an API call
-      return { token: 'mock-token-' + Math.random().toString(36).substr(2, 9) };
+      const response = await api.post('/api/users/login', { email, password });
+      const { token } = response.data;
+      localStorage.setItem('token', token);
+      return response.data;
     } catch (error) {
       console.error('Error logging in:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || 'Failed to login');
     }
   },
 
   signup: async (username, email, password) => {
     try {
-      // For demo purposes, we'll just return a mock token
-      // In a real app, this would make an API call
-      return { token: 'mock-token-' + Math.random().toString(36).substr(2, 9) };
+      const response = await api.post('/api/users', { username, email, password });
+      const { token } = response.data;
+      localStorage.setItem('token', token);
+      return response.data;
     } catch (error) {
       console.error('Error signing up:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || 'Failed to sign up');
     }
+  },
+
+  logout: () => {
+    localStorage.removeItem('token');
   }
 };
 

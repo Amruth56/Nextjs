@@ -24,15 +24,15 @@ export default function NoteList() {
       const data = await notes.getAll(page, 10);
       console.log('Fetched notes:', data);
       if (page === 1) {
-        setNoteList(data || []);
+        setNoteList(data.notes || []);
       } else {
-        setNoteList(prev => [...prev, ...(data || [])]);
+        setNoteList(prev => [...prev, ...(data.notes || [])]);
       }
-      setHasMore((data || []).length === 10);
+      setHasMore(data.hasMore || false);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching notes:', err);
-      setError('Failed to fetch notes');
+      setError(err.message || 'Failed to fetch notes');
       setLoading(false);
     }
   };

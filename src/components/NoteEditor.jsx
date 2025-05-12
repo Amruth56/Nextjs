@@ -41,13 +41,12 @@ export default function NoteEditor({ noteId = null }) {
       if (noteId) {
         await notes.update(noteId, title, body);
       } else {
-        const newNote = await notes.create(title, body);
-        console.log('Created note:', newNote); // Debug log
+        await notes.create(title, body);
       }
+      router.refresh(); // Force refresh to update the notes list
       router.push('/notes');
     } catch (err) {
-      setError('Failed to save note: ' + err.message);
-      console.error('Save error:', err);
+      setError(err.message || 'Failed to save note');
       setLoading(false);
     }
   };
