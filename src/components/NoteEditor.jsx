@@ -41,10 +41,10 @@ export default function NoteEditor({ noteId = null }) {
       if (noteId) {
         await notes.update(noteId, title, body);
       } else {
-        await notes.create(title, body);
+        const newNote = await notes.create(title, body);
+        console.log('Created note:', newNote); // Debug log
       }
       router.push('/notes');
-      router.refresh(); // Force refresh the notes list
     } catch (err) {
       setError('Failed to save note: ' + err.message);
       console.error('Save error:', err);

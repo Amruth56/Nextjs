@@ -53,7 +53,7 @@ export const notes = {
       const newNote = {
         id: Math.random().toString(36).substr(2, 9),
         title,
-        content: body, // Store body as content
+        content: body,
         createdAt: new Date().toISOString(),
       };
       notes.push(newNote);
@@ -74,7 +74,7 @@ export const notes = {
       const updatedNote = {
         ...notes[noteIndex],
         title,
-        content: body, // Store body as content
+        content: body,
         updatedAt: new Date().toISOString(),
       };
       notes[noteIndex] = updatedNote;
@@ -99,6 +99,30 @@ export const notes = {
       throw error;
     }
   },
+};
+
+export const auth = {
+  login: async (email, password) => {
+    try {
+      // For demo purposes, we'll just return a mock token
+      // In a real app, this would make an API call
+      return { token: 'mock-token-' + Math.random().toString(36).substr(2, 9) };
+    } catch (error) {
+      console.error('Error logging in:', error);
+      throw error;
+    }
+  },
+
+  signup: async (username, email, password) => {
+    try {
+      // For demo purposes, we'll just return a mock token
+      // In a real app, this would make an API call
+      return { token: 'mock-token-' + Math.random().toString(36).substr(2, 9) };
+    } catch (error) {
+      console.error('Error signing up:', error);
+      throw error;
+    }
+  }
 };
 
 export default api;

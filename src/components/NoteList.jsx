@@ -14,6 +14,7 @@ export default function NoteList() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("notes.getAll", notes.getAll( ));
     console.log("noteList", noteList);
     fetchNotes();
   }, [page]);
@@ -21,14 +22,16 @@ export default function NoteList() {
   const fetchNotes = async () => {
     try {
       const data = await notes.getAll(page, 10);
+      console.log('Fetched notes:', data);
       if (page === 1) {
-        setNoteList(data.notes || []);
+        setNoteList(data || []);
       } else {
-        setNoteList(prev => [...prev, ...(data.notes || [])]);
+        setNoteList(prev => [...prev, ...(data || [])]);
       }
-      setHasMore((data.notes || []).length === 10);
+      setHasMore((data || []).length === 10);
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching notes:', err);
       setError('Failed to fetch notes');
       setLoading(false);
     }
@@ -38,7 +41,7 @@ export default function NoteList() {
     if (window.confirm('Are you sure you want to delete this note?')) {
       try {
         await notes.delete(id);
-        setNoteList(noteList.filter(note => note._id !== id));
+        setNoteList(noteList.filter(note => note.id !== id));
       } catch (err) {
         setError('Failed to delete note');
       }
@@ -83,16 +86,16 @@ export default function NoteList() {
           <div className="grid gap-4">
             {noteList.map((note) => (
               <div
-                key={note._id}
+                key={note.id}
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start">
-                  <Link href={`/notes/${note._id}`} className="flex-grow">
+                  <Link href={`/notes/${note.id}`} className="flex-grow">
                     <h2 className="text-xl font-semibold mb-2">{note.title}</h2>
-                    <p className="text-gray-600 line-clamp-2">{note.body}</p>
+                    <p className="text-gray-600 line-clamp-2">{note.content}</p>
                   </Link>
                   <button
-                    onClick={() => handleDelete(note._id)}
+                    onClick={() => handleDelete(note.id)}
                     className="ml-4 text-red-500 hover:text-red-700"
                   >
                     Delete

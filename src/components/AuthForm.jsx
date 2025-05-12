@@ -25,8 +25,10 @@ export default function AuthForm({ mode = 'login' }) {
         response = await auth.signup(formData.username, formData.email, formData.password);
       }
       
-      // Store the token
-      localStorage.setItem('token', response.token);
+      // Store the token only if we're in the browser
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token);
+      }
       
       // Redirect to notes page
       router.push('/notes');
